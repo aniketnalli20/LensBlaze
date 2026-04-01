@@ -115,6 +115,9 @@ a {
   font-weight: 500;
   color: #374151;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 10px 6px;
   border-radius: 10px;
 }
@@ -152,8 +155,10 @@ a {
 }
 
 .nav__link {
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 10px 10px;
+  min-height: 44px;
   border-radius: 10px;
   font-weight: 500;
   color: #374151;
@@ -372,8 +377,8 @@ a {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid rgba(17, 24, 39, 0.1);
   background: rgba(255, 255, 255, 0.7);
@@ -440,6 +445,7 @@ a {
   width: 100%;
   border-radius: 14px;
   padding: 11px 12px;
+  min-height: 44px;
   border: 1px solid rgba(17, 24, 39, 0.12);
   background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
@@ -470,6 +476,7 @@ a {
   font-weight: 600;
   border-radius: 999px;
   padding: 12px 18px;
+  min-height: 44px;
   line-height: 1;
   white-space: nowrap;
 }
@@ -687,26 +694,29 @@ a {
 
 .hero__thumb {
   border-radius: 16px;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
   height: 120px;
+  object-fit: cover;
+  object-position: center;
+  background-image: none;
+  background-color: rgba(17, 24, 39, 0.08);
   box-shadow: 0 14px 30px rgba(17, 24, 39, 0.14);
 }
 
 .hero__thumb--one {
-  background-image: url("./assets/photo-1.jpg");
+  background-image: none;
 }
 
 .hero__thumb--two {
-  background-image: url("./assets/photo-2.jpg");
+  background-image: none;
 }
 
 .hero__thumb--three {
-  background-image: url("./assets/photo-3.jpg");
+  background-image: none;
 }
 
 .hero__thumb--four {
-  background-image: url("./assets/photo-4.jpg");
+  background-image: none;
 }
 
 .hero__stats {
@@ -820,6 +830,7 @@ a {
   border: 1px solid rgba(17, 24, 39, 0.1);
   background: rgba(255, 255, 255, 0.9);
   padding: 10px 12px;
+  min-height: 44px;
   border-radius: 14px;
   cursor: pointer;
   font: inherit;
@@ -914,6 +925,7 @@ a {
   border: 1px solid rgba(17, 24, 39, 0.14);
   border-radius: 14px;
   padding: 12px 12px;
+  min-height: 44px;
   background: #fff;
   cursor: pointer;
   font-weight: 800;
@@ -932,7 +944,8 @@ a {
   color: #111827;
   font-weight: 800;
   font-size: 12px;
-  padding: 8px 12px;
+  padding: 10px 14px;
+  min-height: 44px;
   border-radius: 999px;
   cursor: pointer;
 }
@@ -1003,8 +1016,8 @@ a {
 }
 
 .ws-link__btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid rgba(17, 24, 39, 0.12);
   background: #fff;
@@ -1150,6 +1163,7 @@ a {
   font-weight: 700;
   font-size: 12px;
   padding: 8px 12px;
+  min-height: 44px;
   border-radius: 999px;
   cursor: pointer;
   transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
@@ -1449,6 +1463,9 @@ a {
 }
 
 @media (max-width: 520px) {
+  .hero__stats {
+    grid-template-columns: 1fr;
+  }
   .template-preview[data-template="grid"] .tp__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2168,9 +2185,9 @@ html {
 }
 
 .modal__close {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   border: 1px solid var(--line);
   background: #fff;
   cursor: pointer;
@@ -2374,8 +2391,8 @@ html {
 }
 
 .chat__bubble {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: #fff;
   border-radius: 999px;
   display: grid;
