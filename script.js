@@ -206,3 +206,25 @@ if (pendingModal && isLoggedIn()) {
     openModal(pendingModal);
   }, 50);
 }
+
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest("[data-template-tab]");
+  if (!tab) return;
+  if (!(tab instanceof HTMLButtonElement)) return;
+
+  const template = tab.getAttribute("data-template-tab");
+  if (!template) return;
+
+  const card = tab.closest(".bio__card--templates");
+  if (!card) return;
+
+  const preview = card.querySelector(".template-preview");
+  if (!preview) return;
+
+  preview.setAttribute("data-template", template);
+
+  const tabs = card.querySelectorAll("[data-template-tab]");
+  tabs.forEach((el) => {
+    el.classList.toggle("is-active", el === tab);
+  });
+});
