@@ -1035,6 +1035,53 @@ function initWorkspace() {
 
   let state = getWorkspace();
   let editingLinkId = null;
+  const wsTouched = {};
+
+  const wsSchema = {
+    "ws-name": [FormValidationCore.required("Name is required."), FormValidationCore.maxLength(80, "Name is too long.")],
+    "ws-handle": [FormValidationCore.required("Handle is required."), FormValidationCore.maxLength(32, "Handle is too long.")],
+    "ws-bio": [FormValidationCore.maxLength(160, "Bio is too long.")],
+    "ws-location": [FormValidationCore.maxLength(60, "Location is too long.")],
+    "ws-website": [FormValidationCore.urlLike("Use https://, mailto:, or tel:")],
+    "ws-email": [FormValidationCore.email("Enter a valid email.")],
+    "ws-phone": [FormValidationCore.maxLength(24, "Phone is too long.")],
+    "ws-link-title": [FormValidationCore.required("Title is required."), FormValidationCore.maxLength(40, "Title is too long.")],
+    "ws-link-url": [FormValidationCore.required("URL is required."), FormValidationCore.urlLike("Use https://, mailto:, or tel:")],
+  };
+
+  const wsValidateInput = (el, markTouched) => {
+    if (!(el instanceof HTMLElement)) return "";
+    const id = el.getAttribute("id") || "";
+    const validators = wsSchema[id];
+    if (!validators) return "";
+    if (markTouched) wsTouched[id] = true;
+    const value = el.value ?? "";
+    let msg = "";
+    for (const fn of validators) {
+      msg = fn(value);
+      if (msg) break;
+    }
+    if (wsTouched[id]) FormUI.setFieldError("workspace", el, msg);
+    return msg;
+  };
+
+  const wsBindValidation = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("blur", () => {
+      wsValidateInput(el, true);
+    });
+    el.addEventListener("input", () => {
+      if (wsTouched[id]) wsValidateInput(el, false);
+    });
+  };
+
+  Object.keys(wsSchema).forEach((id) => {
+    if (id === "ws-link-title" || id === "ws-link-url") return;
+    wsBindValidation(id);
+  });
+  wsBindValidation("ws-link-title");
+  wsBindValidation("ws-link-url");
 
   const logo = document.getElementById("ws-logo");
   if (logo) {
@@ -1058,12 +1105,14 @@ function initWorkspace() {
       state = fn(el.value);
       setWorkspace(state);
       renderPreview(state);
+      if (wsTouched[id]) wsValidateInput(el, false);
       if (id === "ws-handle") {
         const v = normalizeHandle(el.value);
         el.value = v;
         state = { ...state, profile: { ...state.profile, handle: v } };
         setWorkspace(state);
         renderPreview(state);
+        if (wsTouched[id]) wsValidateInput(el, false);
       }
     });
   };
@@ -1103,7 +1152,9 @@ function initWorkspace() {
       const url = document.getElementById("ws-link-url");
       const t = String(title?.value || "").trim();
       const u = String(url?.value || "").trim();
-      if (!t || !u) return;
+      const titleMsg = title ? wsValidateInput(title, true) : "";
+      const urlMsg = url ? wsValidateInput(url, true) : "";
+      if (titleMsg || urlMsg) return;
 
       const nextLinks = Array.isArray(state.links) ? [...state.links] : [];
       if (editingLinkId) {
@@ -1118,6 +1169,8 @@ function initWorkspace() {
 
       if (title) title.value = "";
       if (url) url.value = "";
+      if (title) FormUI.clearFieldError("workspace", title);
+      if (url) FormUI.clearFieldError("workspace", url);
 
       state = { ...state, links: nextLinks };
       setWorkspace(state);
@@ -1217,6 +1270,19 @@ function initWorkspace() {
   const publish = document.getElementById("workspace-publish");
   if (publish) {
     publish.addEventListener("click", () => {
+      let hasError = false;
+      Object.keys(wsSchema).forEach((id) => {
+        if (id === "ws-link-title" || id === "ws-link-url") return;
+        const el = document.getElementById(id);
+        if (!el) return;
+        const msg = wsValidateInput(el, true);
+        if (msg) hasError = true;
+      });
+      if (hasError) {
+        const firstInvalid = workspace.querySelector('[aria-invalid="true"]');
+        if (firstInvalid && typeof firstInvalid.focus === "function") firstInvalid.focus();
+        return;
+      }
       setWorkspace(state);
       publish.textContent = "Saved";
       window.setTimeout(() => {
@@ -1237,9 +1303,38 @@ function initWorkspace() {
   renderWorkspace(state);
 }
 
+function activateWorkspacePanel(panelId) {
+  const workspace = document.getElementById("workspace");
+  if (!workspace) return;
+  if (workspace.hidden) workspace.hidden = false;
+  const btn = workspace.querySelector(`.ws-nav__item[data-ws-panel="${CSS.escape(panelId)}"]`);
+  if (btn instanceof HTMLButtonElement) btn.click();
+}
+
 const logoutBtn = document.getElementById("btn-logout");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
+    setLoggedOut();
+    updateAuthVisibility();
+    window.location.href = "./index.html";
+  });
+}
+
+const navProfileSettings = document.getElementById("nav-profile-settings");
+if (navProfileSettings) {
+  navProfileSettings.addEventListener("click", () => {
+    closeAllDropdowns();
+    window.location.hash = "#workspace";
+    window.setTimeout(() => {
+      activateWorkspacePanel("account");
+    }, 0);
+  });
+}
+
+const navProfileLogout = document.getElementById("nav-profile-logout");
+if (navProfileLogout) {
+  navProfileLogout.addEventListener("click", () => {
+    closeAllDropdowns();
     setLoggedOut();
     updateAuthVisibility();
     window.location.href = "./index.html";

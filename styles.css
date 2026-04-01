@@ -926,6 +926,7 @@ a {
 }
 
 .ws-link {
+  appearance: none;
   display: grid;
   grid-template-columns: 28px 1fr auto;
   align-items: center;
@@ -934,6 +935,9 @@ a {
   border-radius: 16px;
   border: 1px solid rgba(17, 24, 39, 0.1);
   background: rgba(255, 255, 255, 0.92);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
 }
 
 .ws-link[draggable="true"] {
