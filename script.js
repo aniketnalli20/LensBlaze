@@ -437,6 +437,16 @@ const ProviderAuth = (() => {
   const SELECTED_KEY = "lb_provider_selected_v1";
   const PENDING_KEY = "lb_provider_pending_v1";
 
+  function isGoogleProvider(provider) {
+    return String(provider || "").trim().toLowerCase() === "google";
+  }
+
+  function isGoogleEmail(email) {
+    const v = String(email || "").trim().toLowerCase();
+    if (!v) return false;
+    return /@(gmail\.com|googlemail\.com)$/.test(v);
+  }
+
   function requiresSelection(provider) {
     const p = String(provider || "").toLowerCase();
     return p !== "email";
@@ -459,6 +469,16 @@ const ProviderAuth = (() => {
     return all[String(provider || "provider")] || null;
   }
 
+  function clearSelected(provider) {
+    const key = String(provider || "provider");
+    const next = getAllSelected();
+    if (!next[key]) return;
+    delete next[key];
+    try {
+      window.sessionStorage.setItem(SELECTED_KEY, JSON.stringify(next));
+    } catch {}
+  }
+
   function setPending(provider, formId) {
     try {
       window.sessionStorage.setItem(PENDING_KEY, JSON.stringify({ provider, formId }));
@@ -477,12 +497,33 @@ const ProviderAuth = (() => {
     if (status) status.textContent = "";
   }
 
-  function getDefaultAccounts(provider) {
+  function getFallbackAccounts(provider) {
     const p = String(provider || "provider").toLowerCase();
-    if (p === "google") {
-      return ["studio@example.com", "photographer@example.com", "hello@example.com"];
+    if (p === "facebook") return ["hello@example.com"];
+    if (p === "apple") return ["hello@example.com"];
+    return [];
+  }
+
+  function getAccounts(provider) {
+    if (isGoogleProvider(provider)) {
+      const ws = getWorkspace?.();
+      const configured = Array.isArray(ws?.account?.googleAccounts) ? ws.account.googleAccounts : [];
+      const fromWorkspace = configured.map((v) => String(v || "").trim().toLowerCase()).filter(isGoogleEmail);
+
+      const lastEmail = String(window.localStorage.getItem("lb_email") || "")
+        .trim()
+        .toLowerCase();
+      const fromLast = isGoogleEmail(lastEmail) ? [lastEmail] : [];
+
+      const alreadySelected = String(getSelected(provider)?.email || "")
+        .trim()
+        .toLowerCase();
+      const fromSelected = isGoogleEmail(alreadySelected) ? [alreadySelected] : [];
+
+      return Array.from(new Set([...fromWorkspace, ...fromLast, ...fromSelected]));
     }
-    return ["hello@example.com", "billing@example.com"];
+
+    return getFallbackAccounts(provider);
   }
 
   function renderAccounts(provider) {
@@ -490,17 +531,33 @@ const ProviderAuth = (() => {
     if (!root) return;
     root.innerHTML = "";
 
-    const selected = getSelected(provider)?.email || "";
-    getDefaultAccounts(provider).forEach((email) => {
+    const cont = document.getElementById("provider-continue");
+    const accounts = getAccounts(provider);
+    const selected = String(getSelected(provider)?.email || "").trim().toLowerCase();
+
+    if (!accounts.length) {
+      const empty = document.createElement("div");
+      empty.className = "ws-empty";
+      empty.textContent = isGoogleProvider(provider)
+        ? "No Google accounts configured yet. Add one in Workspace → Account."
+        : "No accounts available for this provider.";
+      root.appendChild(empty);
+      if (cont instanceof HTMLButtonElement) cont.disabled = true;
+      return;
+    }
+
+    if (cont instanceof HTMLButtonElement) cont.disabled = false;
+
+    accounts.forEach((email) => {
       const row = document.createElement("button");
       row.type = "button";
       row.className = "ws-link";
       row.setAttribute("data-provider-email", email);
-      row.setAttribute("aria-pressed", String(email === selected));
+      row.setAttribute("aria-pressed", String(String(email).toLowerCase() === selected));
 
       const icon = document.createElement("div");
       icon.className = "ws-link__drag";
-      icon.textContent = email === selected ? "✓" : "○";
+      icon.textContent = String(email).toLowerCase() === selected ? "✓" : "○";
 
       const meta = document.createElement("div");
       meta.className = "ws-link__meta";
@@ -532,15 +589,21 @@ const ProviderAuth = (() => {
     });
   }
 
-  function open(provider, formId) {
+  function open(provider, formId, initialStatus) {
     setPending(provider, formId);
 
     const title = document.getElementById("provider-title");
     const subtitle = document.getElementById("provider-subtitle");
     if (title) title.textContent = `Select ${String(provider || "an")} account`;
-    if (subtitle) subtitle.textContent = "Choose the account you want to use before continuing.";
+    if (subtitle) {
+      subtitle.textContent = isGoogleProvider(provider)
+        ? "Choose a Gmail/Googlemail account to use for Google sign-in."
+        : "Choose the account you want to use before continuing.";
+    }
     renderAccounts(provider);
     openModal("provider");
+    const status = document.getElementById("provider-status");
+    if (status && initialStatus) status.textContent = String(initialStatus);
   }
 
   function bind() {
@@ -567,8 +630,15 @@ const ProviderAuth = (() => {
         if (!pending?.provider) return;
         const selected = getSelected(pending.provider);
         const status = document.getElementById("provider-status");
-        if (!selected?.email) {
+        const email = String(selected?.email || "").trim().toLowerCase();
+        if (!email) {
           if (status) status.textContent = "Please select an account to continue.";
+          return;
+        }
+        if (isGoogleProvider(pending.provider) && !isGoogleEmail(email)) {
+          clearSelected(pending.provider);
+          renderAccounts(pending.provider);
+          if (status) status.textContent = "Google sign-in requires a Gmail/Googlemail address.";
           return;
         }
 
@@ -592,7 +662,7 @@ const ProviderAuth = (() => {
 
   bind();
 
-  return { requiresSelection, getSelected, open, clearPending };
+  return { requiresSelection, getSelected, open, clearPending, isGoogleEmail, isGoogleProvider, clearSelected };
 })();
 
 const ButtonClickHandlers = (() => {
@@ -612,11 +682,16 @@ const ButtonClickHandlers = (() => {
     const form = btn.closest("form");
     if (!form) return;
     const selection = ProviderAuth.getSelected(provider);
-    if (ProviderAuth.requiresSelection(provider) && !selection) {
+    const email = String(selection?.email || "").trim().toLowerCase();
+    if (ProviderAuth.requiresSelection(provider) && !email) {
       ProviderAuth.open(provider, form.getAttribute("id") || "");
       return;
     }
-    const email = selection?.email || "";
+    if (ProviderAuth.isGoogleProvider(provider) && !ProviderAuth.isGoogleEmail(email)) {
+      ProviderAuth.clearSelected(provider);
+      ProviderAuth.open(provider, form.getAttribute("id") || "", "Google sign-in requires a Gmail/Googlemail address.");
+      return;
+    }
     setLoggedIn({ method: provider, email });
     setStatus(form, `Signed in with ${provider}.`);
     updateAuthVisibility();
