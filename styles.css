@@ -1083,6 +1083,7 @@ a {
   --tp-radius: 18px;
   --tp-gap: 10px;
   --tp-max-h: 420px;
+  --tp-link-radius: 999px;
   background: var(--tp-bg);
   color: var(--tp-text);
   border-radius: 16px;
@@ -1136,7 +1137,7 @@ a {
   color: var(--tp-text);
   background: var(--tp-surface);
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 999px;
+  border-radius: var(--tp-link-radius);
   padding: 10px 12px;
   font-weight: 800;
   font-size: 12px;
@@ -1146,6 +1147,28 @@ a {
 .tp__link--primary {
   background: linear-gradient(180deg, var(--tp-accent-2), var(--tp-accent));
   border-color: rgba(240, 138, 42, 0.3);
+}
+
+.tp[data-btn="outline"] .tp__link {
+  background: transparent;
+  border-color: rgba(17, 24, 39, 0.22);
+}
+
+.tp[data-btn="outline"] .tp__link--primary {
+  background: transparent;
+  border-color: rgba(240, 138, 42, 0.55);
+  color: var(--tp-text);
+}
+
+.tp[data-btn="ghost"] .tp__link {
+  background: transparent;
+  border-color: transparent;
+}
+
+.tp[data-btn="ghost"] .tp__link--primary {
+  background: transparent;
+  border-color: transparent;
+  color: var(--tp-accent);
 }
 
 .tp__module {
