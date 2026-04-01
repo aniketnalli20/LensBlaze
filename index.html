@@ -39,6 +39,7 @@
             </button>
             <div class="nav__menu" role="menu" aria-label="Product">
               <a class="nav__link" href="#overview" role="menuitem">Overview</a>
+              <a class="nav__link" href="#workspace" role="menuitem" data-auth-show="in">Workspace</a>
               <a class="nav__link" href="#bio" role="menuitem">Bio link page</a>
               <a class="nav__link" href="#features" role="menuitem">Features</a>
               <a class="nav__link" href="#integrations" role="menuitem">Integrations</a>
@@ -60,8 +61,10 @@
         </nav>
 
         <div class="topbar__actions">
-          <a class="topbar__login" href="./login.html">Log In</a>
-          <a class="btn btn--primary" href="#signup" data-modal="signup">Start free trial</a>
+          <a class="topbar__login" href="./login.html" data-auth-show="out">Log In</a>
+          <a class="btn btn--primary" href="#signup" data-modal="signup" data-auth-show="out">Start free trial</a>
+          <a class="btn btn--secondary" href="#workspace" data-auth-show="in">Workspace</a>
+          <button class="btn btn--secondary" type="button" id="btn-logout" data-auth-show="in">Log out</button>
         </div>
       </div>
     </header>
@@ -116,6 +119,235 @@
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section id="workspace" class="workspace anchor" aria-label="Workspace" hidden data-auth-show="in">
+          <header class="workspace__head">
+            <div class="workspace__head-copy">
+              <h2 class="workspace__title">Your LensBlaze workspace</h2>
+              <p class="workspace__subtitle">Customize your bio page, keep branding consistent, and control client flow.</p>
+            </div>
+            <div class="workspace__head-actions">
+              <a class="btn btn--secondary" href="#" id="workspace-view-public" target="_blank" rel="noopener">View public profile</a>
+              <button class="btn btn--primary" type="button" id="workspace-publish">Publish changes</button>
+            </div>
+          </header>
+
+          <div class="workspace__layout">
+            <aside class="workspace__nav" aria-label="Workspace navigation">
+              <button class="ws-nav__item is-active" type="button" data-ws-panel="profile">Profile</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="branding">Branding</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="bio">Bio page</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="links">Links</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="galleries">Galleries</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="store">Store</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="security">Security</button>
+            </aside>
+
+            <div class="workspace__main">
+              <section class="ws-panel is-active" data-ws-panel="profile" aria-label="Profile overview">
+                <div class="ws-panel__title">Profile Overview</div>
+                <div class="ws-grid">
+                  <label class="ws-field">
+                    <div class="ws-field__label">Full name / Studio name</div>
+                    <input class="ws-field__input" type="text" id="ws-name" placeholder="e.g., Ava Chen Studio" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Username / handle</div>
+                    <input class="ws-field__input" type="text" id="ws-handle" placeholder="e.g., avachen" />
+                    <div class="ws-field__hint">Used for your bio link URL.</div>
+                  </label>
+                  <label class="ws-field ws-field--full">
+                    <div class="ws-field__label">Short bio / tagline</div>
+                    <textarea class="ws-field__input ws-field__textarea" id="ws-bio" rows="3" placeholder="What do you shoot?"></textarea>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Location (optional)</div>
+                    <input class="ws-field__input" type="text" id="ws-location" placeholder="e.g., Goa, India" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Website / domain (optional)</div>
+                    <input class="ws-field__input" type="url" id="ws-website" placeholder="https://yourstudio.com" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="branding" aria-label="Branding and identity">
+                <div class="ws-panel__title">Branding & Identity</div>
+                <div class="ws-grid">
+                  <label class="ws-field ws-field--full">
+                    <div class="ws-field__label">Logo upload</div>
+                    <input class="ws-field__input" type="file" id="ws-logo" accept="image/*" />
+                    <div class="ws-field__hint">Used on bio page, galleries, and email headers.</div>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Primary color</div>
+                    <input class="ws-field__input ws-field__color" type="color" id="ws-color-primary" value="#f08a2a" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Background</div>
+                    <input class="ws-field__input ws-field__color" type="color" id="ws-color-bg" value="#ffffff" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Text</div>
+                    <input class="ws-field__input ws-field__color" type="color" id="ws-color-text" value="#111827" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Dark mode</div>
+                    <button class="ws-toggle" type="button" id="ws-dark-toggle" aria-pressed="false">Off</button>
+                  </label>
+                </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="bio" aria-label="Bio link page settings">
+                <div class="ws-panel__title">Bio Link Page</div>
+                <div class="ws-grid">
+                  <label class="ws-field ws-field--full">
+                    <div class="ws-field__label">Template style</div>
+                    <div class="ws-choice">
+                      <button class="ws-pill is-active" type="button" data-ws-template="minimal">Minimal</button>
+                      <button class="ws-pill" type="button" data-ws-template="grid">Grid</button>
+                      <button class="ws-pill" type="button" data-ws-template="feed">Story</button>
+                      <button class="ws-pill" type="button" data-ws-template="editorial">Editorial</button>
+                      <button class="ws-pill" type="button" data-ws-template="booking">Booking</button>
+                      <button class="ws-pill" type="button" data-ws-template="experimental">Experimental</button>
+                    </div>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Button style</div>
+                    <select class="ws-field__input" id="ws-button-style">
+                      <option value="filled">Filled</option>
+                      <option value="outline">Outline</option>
+                      <option value="ghost">Ghost</option>
+                    </select>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Button radius</div>
+                    <input class="ws-field__input" id="ws-radius" type="range" min="8" max="999" value="999" />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Spacing</div>
+                    <select class="ws-field__input" id="ws-spacing">
+                      <option value="compact">Compact</option>
+                      <option value="comfortable" selected>Comfortable</option>
+                      <option value="spacious">Spacious</option>
+                    </select>
+                  </label>
+                </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="links" aria-label="Link manager">
+                <div class="ws-panel__title">Links</div>
+                <div class="ws-grid">
+                  <div class="ws-field ws-field--full">
+                    <div class="ws-field__label">Your links</div>
+                    <div class="ws-links" id="ws-links"></div>
+                    <div class="ws-field__hint">Drag to reorder. Click a link to edit.</div>
+                  </div>
+                  <div class="ws-field ws-field--full">
+                    <div class="ws-field__label">Add a link</div>
+                    <div class="ws-add">
+                      <input class="ws-field__input" id="ws-link-title" type="text" placeholder="Title (e.g., Book now)" />
+                      <input class="ws-field__input" id="ws-link-url" type="url" placeholder="https://..." />
+                      <button class="btn btn--primary" type="button" id="ws-link-add">Add</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="galleries" aria-label="Portfolio and galleries">
+                <div class="ws-panel__title">Portfolio & Galleries</div>
+                <div class="ws-empty">Coming next: gallery uploads, visibility controls, and client proofing workflows.</div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="store" aria-label="Store and pricing">
+                <div class="ws-panel__title">Store & Pricing</div>
+                <div class="ws-empty">Coming next: prints, digital downloads, packages, coupons, and secure checkout.</div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="security" aria-label="Security settings">
+                <div class="ws-panel__title">Security</div>
+                <div class="ws-grid">
+                  <button class="btn btn--secondary" type="button" id="ws-logout-all">Log out everywhere</button>
+                </div>
+              </section>
+            </div>
+
+            <aside class="workspace__preview" aria-label="Bio page live preview">
+              <div class="ws-preview__head">
+                <div class="ws-preview__title">Live preview</div>
+                <div class="ws-preview__url" id="ws-preview-url"></div>
+              </div>
+              <div class="template-preview template-preview--live" id="ws-preview" data-template="minimal">
+                <div class="tp" aria-label="Bio template preview">
+                  <div class="tp__profile">
+                    <div class="tp__avatar" aria-hidden="true" id="ws-preview-avatar"></div>
+                    <div class="tp__name" id="ws-preview-name">Your Name</div>
+                    <div class="tp__bio" id="ws-preview-bio">Your bio will show here.</div>
+                  </div>
+
+                  <div class="tp__module tp__module--links">
+                    <div class="tp__links" aria-label="Primary links" id="ws-preview-links"></div>
+                  </div>
+
+                  <div class="tp__module tp__module--grid" aria-label="Grid preview">
+                    <div class="tp__grid" aria-hidden="true">
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                      <div class="tp__tile"></div>
+                    </div>
+                  </div>
+
+                  <div class="tp__module tp__module--feed" aria-label="Feed preview">
+                    <div class="tp__feed">
+                      <div class="tp__card">
+                        <div class="tp__card-media" aria-hidden="true"></div>
+                        <div class="tp__card-body">
+                          <div class="tp__caption">Post preview — tell a story with image + caption.</div>
+                          <a class="tp__link" href="#">View post</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tp__module tp__module--editorial" aria-label="Editorial preview">
+                    <div class="tp__editorial">
+                      <div class="tp__hero" aria-hidden="true"></div>
+                      <div class="tp__sections" aria-label="Sections">
+                        <div class="tp__section"><span>Portfolio</span><span aria-hidden="true">→</span></div>
+                        <div class="tp__section"><span>Services</span><span aria-hidden="true">→</span></div>
+                        <div class="tp__section"><span>About</span><span aria-hidden="true">→</span></div>
+                        <div class="tp__section"><span>Contact</span><span aria-hidden="true">→</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tp__module tp__module--booking" aria-label="Booking preview">
+                    <div class="tp__booking">
+                      <div class="tp__trust" aria-label="Trust elements">
+                        <div class="tp__badge">★★★★★ Reviews</div>
+                        <div class="tp__badge">Fast delivery</div>
+                        <div class="tp__badge">Secure checkout</div>
+                      </div>
+                      <div class="tp__sticky">
+                        <div class="tp__links" aria-label="Booking CTAs">
+                          <a class="tp__link tp__link--primary" href="#">Book Now</a>
+                          <a class="tp__link" href="#">View Packages</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tp__social" aria-label="Social links">IG · WhatsApp · Email</div>
+                </div>
+              </div>
+            </aside>
           </div>
         </section>
 
