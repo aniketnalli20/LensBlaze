@@ -2007,6 +2007,37 @@ html {
   scroll-margin-top: 92px;
 }
 
+.links-page .content {
+  display: grid;
+  gap: 18px;
+}
+
+.links-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.links-page .section__header {
+  text-align: left;
+  justify-items: start;
+}
+
+.links-page .section__title {
+  font-size: 28px;
+}
+
+.links-page .section__subtitle {
+  max-width: 88ch;
+}
+
+.links-page .section {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .solution-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
