@@ -134,44 +134,307 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-document.querySelectorAll("form").forEach((form) => {
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const button = form.querySelector('button[type="submit"]');
-    if (button) button.disabled = true;
+const FormValidationCore = (() => {
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const urlLikeRe = /^(https?:\/\/|mailto:|tel:)/i;
 
-    const name = form.getAttribute("id") || "form";
-    if (name === "form-signup") {
+  function required(message) {
+    return (value) => {
+      const v = String(value ?? "").trim();
+      if (!v) return message || "This field is required.";
+      return "";
+    };
+  }
+
+  function email(message) {
+    return (value) => {
+      const v = String(value ?? "").trim();
+      if (!v) return "";
+      if (!emailRe.test(v)) return message || "Enter a valid email address.";
+      return "";
+    };
+  }
+
+  function minLength(min, message) {
+    return (value) => {
+      const v = String(value ?? "");
+      if (!v) return "";
+      if (v.length < min) return message || `Must be at least ${min} characters.`;
+      return "";
+    };
+  }
+
+  function maxLength(max, message) {
+    return (value) => {
+      const v = String(value ?? "");
+      if (!v) return "";
+      if (v.length > max) return message || `Must be at most ${max} characters.`;
+      return "";
+    };
+  }
+
+  function selectRequired(message) {
+    return (value) => {
+      const v = String(value ?? "");
+      if (!v) return message || "Please select an option.";
+      return "";
+    };
+  }
+
+  function urlLike(message) {
+    return (value) => {
+      const v = String(value ?? "").trim();
+      if (!v) return "";
+      if (!urlLikeRe.test(v)) return message || "Enter a valid URL.";
+      return "";
+    };
+  }
+
+  return { required, email, minLength, maxLength, selectRequired, urlLike };
+})();
+
+const FormSchemas = (() => {
+  const v = FormValidationCore;
+  return {
+    "form-signup": {
+      email: [v.required("Work email is required."), v.email("Enter a valid work email.")],
+      password: [v.required("Password is required."), v.minLength(8, "Password must be at least 8 characters.")],
+    },
+    "form-login": {
+      email: [v.required("Email is required."), v.email("Enter a valid email.")],
+      password: [v.required("Password is required.")],
+    },
+    "form-login-page": {
+      email: [v.required("Email is required."), v.email("Enter a valid email.")],
+      password: [v.required("Password is required.")],
+    },
+    "form-demo": {
+      name: [v.required("Name is required."), v.minLength(2, "Name is too short."), v.maxLength(80, "Name is too long.")],
+      email: [v.required("Email is required."), v.email("Enter a valid email.")],
+      type: [v.selectRequired("Select what you shoot.")],
+    },
+    "form-contact": {
+      name: [v.required("Name is required."), v.minLength(2, "Name is too short."), v.maxLength(80, "Name is too long.")],
+      email: [v.required("Email is required."), v.email("Enter a valid email.")],
+      message: [v.required("Message is required."), v.minLength(10, "Message is too short."), v.maxLength(1200, "Message is too long.")],
+    },
+  };
+})();
+
+const FormUI = (() => {
+  function getFieldContainer(input) {
+    return input.closest(".field") || input.closest(".auth-field") || input.closest(".ws-field") || input.parentElement;
+  }
+
+  function getErrorClass(container) {
+    if (!container) return "field__error";
+    if (container.classList.contains("auth-field")) return "auth-field__error";
+    if (container.classList.contains("ws-field")) return "ws-field__error";
+    return "field__error";
+  }
+
+  function ensureErrorEl(formId, input) {
+    const name = input.getAttribute("name") || input.getAttribute("id") || "field";
+    const errorId = `${formId}-${name}-error`;
+    const container = getFieldContainer(input);
+    if (!container) return null;
+
+    let existing = container.querySelector(`#${CSS.escape(errorId)}`);
+    if (existing) return existing;
+
+    const el = document.createElement("div");
+    el.id = errorId;
+    el.className = getErrorClass(container);
+    el.setAttribute("role", "alert");
+    el.hidden = true;
+    container.appendChild(el);
+    return el;
+  }
+
+  function setAriaDescribedBy(input, errorEl) {
+    if (!errorEl) return;
+    const current = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+    if (!current.includes(errorEl.id)) current.push(errorEl.id);
+    input.setAttribute("aria-describedby", current.join(" "));
+  }
+
+  function clearAriaDescribedBy(input, errorEl) {
+    if (!errorEl) return;
+    const current = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+    const next = current.filter((id) => id !== errorEl.id);
+    if (next.length) input.setAttribute("aria-describedby", next.join(" "));
+    else input.removeAttribute("aria-describedby");
+  }
+
+  function setFieldError(formId, input, message) {
+    const el = ensureErrorEl(formId, input);
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = !message;
+    input.setAttribute("aria-invalid", message ? "true" : "false");
+    if (message) setAriaDescribedBy(input, el);
+    else clearAriaDescribedBy(input, el);
+  }
+
+  function clearFieldError(formId, input) {
+    setFieldError(formId, input, "");
+  }
+
+  function focusFirstInvalid(form) {
+    const el = form.querySelector('[aria-invalid="true"]');
+    if (el && typeof el.focus === "function") el.focus();
+  }
+
+  return { setFieldError, clearFieldError, focusFirstInvalid };
+})();
+
+const FormState = (() => {
+  function create(form) {
+    return {
+      id: form.getAttribute("id") || "form",
+      values: {},
+      errors: {},
+      touched: {},
+      isSubmitting: false,
+    };
+  }
+
+  return { create };
+})();
+
+const FormHandlers = (() => {
+  function handleSubmit(form, state) {
+    const id = state.id;
+    if (id === "form-signup") {
       const plan = document.getElementById("signup-plan")?.value || "Advanced";
       setStatus(form, `Account created. Trial started on ${plan}.`);
-    } else if (name === "form-login") {
-      const email = form.querySelector('input[name="email"]')?.value || "";
+      return;
+    }
+    if (id === "form-login") {
+      const email = String(state.values.email || "");
       setLoggedIn({ method: "email", email });
       setStatus(form, "Logged in successfully.");
-    } else if (name === "form-login-page") {
-      const email = form.querySelector('input[name="email"]')?.value || "";
+      closeAllModals();
+      updateAuthVisibility();
+      return;
+    }
+    if (id === "form-login-page") {
+      const email = String(state.values.email || "");
       setLoggedIn({ method: "email", email });
       setStatus(form, "Logged in successfully.");
+      updateAuthVisibility();
       const redirect = getSafeRedirect();
       window.setTimeout(() => {
         window.location.href = redirect;
       }, 450);
-    } else if (name === "form-demo") {
-      setStatus(form, "Request received. We’ll email you to schedule a demo.");
-    } else if (name === "form-contact") {
-      setStatus(form, "Message sent. We’ll get back to you shortly.");
-    } else {
-      setStatus(form, "Submitted.");
+      return;
     }
+    if (id === "form-demo") {
+      setStatus(form, "Request received. We’ll email you to schedule a demo.");
+      closeAllModals();
+      return;
+    }
+    if (id === "form-contact") {
+      setStatus(form, "Message sent. We’ll get back to you shortly.");
+      closeAllModals();
+      return;
+    }
+    setStatus(form, "Submitted.");
+  }
 
-    window.setTimeout(() => {
-      if (button) button.disabled = false;
-    }, 700);
+  return { handleSubmit };
+})();
+
+function validateField(formId, name, value) {
+  const schema = FormSchemas[formId];
+  if (!schema) return "";
+  const validators = schema[name];
+  if (!validators) return "";
+  for (const fn of validators) {
+    const msg = fn(value);
+    if (msg) return msg;
+  }
+  return "";
+}
+
+function initFormSystem() {
+  document.querySelectorAll("form").forEach((form) => {
+    const formId = form.getAttribute("id") || "form";
+    const schema = FormSchemas[formId];
+    if (!schema) return;
+
+    form.setAttribute("novalidate", "");
+    const state = FormState.create(form);
+
+    const fields = Object.keys(schema)
+      .map((name) => form.querySelector(`[name="${CSS.escape(name)}"]`))
+      .filter(Boolean);
+
+    const readValues = () => {
+      fields.forEach((input) => {
+        const key = input.getAttribute("name");
+        state.values[key] = input.value;
+      });
+    };
+
+    const validateOne = (input, markTouched) => {
+      const name = input.getAttribute("name");
+      if (!name) return "";
+      if (markTouched) state.touched[name] = true;
+      const msg = validateField(formId, name, input.value);
+      state.errors[name] = msg;
+      if (state.touched[name]) FormUI.setFieldError(formId, input, msg);
+      return msg;
+    };
+
+    fields.forEach((input) => {
+      input.addEventListener("input", () => {
+        state.values[input.getAttribute("name")] = input.value;
+        if (state.touched[input.getAttribute("name")]) validateOne(input, false);
+      });
+      input.addEventListener("blur", () => {
+        validateOne(input, true);
+      });
+      input.addEventListener("change", () => {
+        state.values[input.getAttribute("name")] = input.value;
+        if (state.touched[input.getAttribute("name")]) validateOne(input, false);
+      });
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (state.isSubmitting) return;
+      state.isSubmitting = true;
+
+      const button = form.querySelector('button[type="submit"]');
+      if (button) button.disabled = true;
+
+      readValues();
+      let hasError = false;
+      fields.forEach((input) => {
+        const msg = validateOne(input, true);
+        if (msg) hasError = true;
+      });
+
+      if (hasError) {
+        FormUI.focusFirstInvalid(form);
+        state.isSubmitting = false;
+        if (button) button.disabled = false;
+        return;
+      }
+
+      FormHandlers.handleSubmit(form, state);
+
+      window.setTimeout(() => {
+        state.isSubmitting = false;
+        if (button) button.disabled = false;
+      }, 700);
+    });
   });
-});
+}
 
-document.querySelectorAll("[data-toggle-password]").forEach((btn) => {
-  btn.addEventListener("click", () => {
+const ButtonClickHandlers = (() => {
+  function togglePassword(btn) {
     const selector = btn.getAttribute("data-toggle-password");
     if (!selector) return;
     const input = document.querySelector(selector);
@@ -180,22 +443,35 @@ document.querySelectorAll("[data-toggle-password]").forEach((btn) => {
     const nextType = input.type === "password" ? "text" : "password";
     input.type = nextType;
     btn.setAttribute("aria-label", nextType === "password" ? "Show password" : "Hide password");
-  });
-});
+  }
 
-document.querySelectorAll("[data-provider]").forEach((btn) => {
-  btn.addEventListener("click", () => {
+  function providerSignIn(btn) {
     const provider = btn.getAttribute("data-provider") || "provider";
     const form = btn.closest("form");
     if (!form) return;
     setLoggedIn({ method: provider });
     setStatus(form, `Signed in with ${provider}.`);
+    updateAuthVisibility();
     if (document.body.classList.contains("auth-body")) {
       const redirect = getSafeRedirect();
       window.setTimeout(() => {
         window.location.href = redirect;
       }, 450);
     }
+  }
+
+  return { togglePassword, providerSignIn };
+})();
+
+document.querySelectorAll("[data-toggle-password]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    ButtonClickHandlers.togglePassword(btn);
+  });
+});
+
+document.querySelectorAll("[data-provider]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    ButtonClickHandlers.providerSignIn(btn);
   });
 });
 
@@ -765,5 +1041,51 @@ if (logoutBtn) {
   });
 }
 
+initFormSystem();
 updateAuthVisibility();
 initWorkspace();
+
+const params = new URLSearchParams(window.location.search);
+if (params.get("lb_test") === "1") {
+  const assert = (cond, msg) => {
+    if (!cond) throw new Error(msg);
+  };
+
+  const testEmail = () => {
+    const f = validateField("form-login", "email", "bad");
+    assert(Boolean(f), "Expected invalid email error");
+    const ok = validateField("form-login", "email", "a@b.co");
+    assert(!ok, "Expected valid email");
+  };
+
+  const testSignup = () => {
+    const form = document.getElementById("form-signup");
+    if (!form) return;
+    const email = form.querySelector('input[name="email"]');
+    const password = form.querySelector('input[name="password"]');
+    if (!(email instanceof HTMLInputElement)) return;
+    if (!(password instanceof HTMLInputElement)) return;
+
+    email.value = "bad";
+    password.value = "123";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    assert(email.getAttribute("aria-invalid") === "true", "Expected email aria-invalid true");
+    assert(password.getAttribute("aria-invalid") === "true", "Expected password aria-invalid true");
+
+    email.value = "a@b.co";
+    password.value = "12345678";
+    email.dispatchEvent(new Event("blur", { bubbles: true }));
+    password.dispatchEvent(new Event("blur", { bubbles: true }));
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    assert(email.getAttribute("aria-invalid") !== "true", "Expected email aria-invalid false");
+    assert(password.getAttribute("aria-invalid") !== "true", "Expected password aria-invalid false");
+  };
+
+  try {
+    testEmail();
+    testSignup();
+    console.log("[LensBlaze] Form tests passed");
+  } catch (err) {
+    console.error("[LensBlaze] Form tests failed", err);
+  }
+}
