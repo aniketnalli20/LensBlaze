@@ -1081,9 +1081,37 @@ if (params.get("lb_test") === "1") {
     assert(password.getAttribute("aria-invalid") !== "true", "Expected password aria-invalid false");
   };
 
+  const testContact = () => {
+    const form = document.getElementById("form-contact");
+    if (!form) return;
+    const message = form.querySelector('textarea[name="message"]');
+    if (!(message instanceof HTMLTextAreaElement)) return;
+    message.value = "hi";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    assert(message.getAttribute("aria-invalid") === "true", "Expected message aria-invalid true");
+    message.value = "Hello, I would like to book a session.";
+    message.dispatchEvent(new Event("blur", { bubbles: true }));
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    assert(message.getAttribute("aria-invalid") !== "true", "Expected message aria-invalid false");
+  };
+
+  const testTogglePassword = () => {
+    const btn = document.querySelector("[data-toggle-password]");
+    if (!(btn instanceof HTMLButtonElement)) return;
+    const selector = btn.getAttribute("data-toggle-password");
+    if (!selector) return;
+    const input = document.querySelector(selector);
+    if (!(input instanceof HTMLInputElement)) return;
+    const start = input.type;
+    btn.click();
+    assert(input.type !== start, "Expected password field type to toggle");
+  };
+
   try {
     testEmail();
     testSignup();
+    testContact();
+    testTogglePassword();
     console.log("[LensBlaze] Form tests passed");
   } catch (err) {
     console.error("[LensBlaze] Form tests failed", err);
