@@ -137,12 +137,18 @@
           <div class="workspace__layout">
             <aside class="workspace__nav" aria-label="Workspace navigation">
               <button class="ws-nav__item is-active" type="button" data-ws-panel="profile">Profile</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="account">Account</button>
               <button class="ws-nav__item" type="button" data-ws-panel="branding">Branding</button>
               <button class="ws-nav__item" type="button" data-ws-panel="bio">Bio page</button>
               <button class="ws-nav__item" type="button" data-ws-panel="links">Links</button>
               <button class="ws-nav__item" type="button" data-ws-panel="galleries">Galleries</button>
               <button class="ws-nav__item" type="button" data-ws-panel="store">Store</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="bookings">Bookings</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="notifications">Notifications</button>
               <button class="ws-nav__item" type="button" data-ws-panel="security">Security</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="billing">Billing</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="integrations">Integrations</button>
+              <button class="ws-nav__item" type="button" data-ws-panel="data">Data</button>
             </aside>
 
             <div class="workspace__main">
@@ -169,6 +175,30 @@
                   <label class="ws-field">
                     <div class="ws-field__label">Website / domain (optional)</div>
                     <input class="ws-field__input" type="url" id="ws-website" placeholder="https://yourstudio.com" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="account" aria-label="Account information">
+                <div class="ws-panel__title">Account Information</div>
+                <div class="ws-grid">
+                  <label class="ws-field">
+                    <div class="ws-field__label">Email</div>
+                    <input class="ws-field__input" type="email" id="ws-email" placeholder="you@example.com" />
+                    <div class="ws-field__hint">Changing email should require verification (handled server-side).</div>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Phone (optional)</div>
+                    <input class="ws-field__input" type="tel" id="ws-phone" placeholder="+91..." />
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Account type</div>
+                    <input class="ws-field__input" type="text" id="ws-plan" value="Trial" disabled />
+                    <div class="ws-field__hint">Read-only in UI. Controlled by your billing system.</div>
+                  </label>
+                  <label class="ws-field">
+                    <div class="ws-field__label">Plan validity</div>
+                    <input class="ws-field__input" type="text" id="ws-validity" value="30 days" disabled />
                   </label>
                 </div>
               </section>
@@ -266,11 +296,36 @@
                 <div class="ws-empty">Coming next: prints, digital downloads, packages, coupons, and secure checkout.</div>
               </section>
 
+              <section class="ws-panel" data-ws-panel="bookings" aria-label="Bookings and leads">
+                <div class="ws-panel__title">Bookings & Leads</div>
+                <div class="ws-empty">Coming next: inquiry forms, lead pipeline (new/contacted/booked/completed), and email templates.</div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="notifications" aria-label="Notifications and email settings">
+                <div class="ws-panel__title">Notifications & Email</div>
+                <div class="ws-empty">Coming next: toggles for inquiry alerts, gallery views, purchases, and system notifications.</div>
+              </section>
+
               <section class="ws-panel" data-ws-panel="security" aria-label="Security settings">
                 <div class="ws-panel__title">Security</div>
                 <div class="ws-grid">
                   <button class="btn btn--secondary" type="button" id="ws-logout-all">Log out everywhere</button>
                 </div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="billing" aria-label="Subscription and billing">
+                <div class="ws-panel__title">Subscription & Billing</div>
+                <div class="ws-empty">Coming next: upgrade/downgrade, trial status, invoices, and billing history.</div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="integrations" aria-label="Integrations">
+                <div class="ws-panel__title">Integrations</div>
+                <div class="ws-empty">Coming next: payment gateways, email provider, analytics, and domain connection.</div>
+              </section>
+
+              <section class="ws-panel" data-ws-panel="data" aria-label="Data and account controls">
+                <div class="ws-panel__title">Data & Account Controls</div>
+                <div class="ws-empty">Coming next: export data, backups, and account deletion workflows.</div>
               </section>
             </div>
 
