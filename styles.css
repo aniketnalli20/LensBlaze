@@ -329,6 +329,10 @@ a {
   color: rgba(17, 24, 39, 0.55);
 }
 
+.auth-field__icon svg {
+  display: block;
+}
+
 .auth-field__input {
   width: 100%;
   border: 1px solid rgba(17, 24, 39, 0.12);
@@ -1006,6 +1010,10 @@ a {
   line-height: 1;
 }
 
+.ws-link__btn svg {
+  display: block;
+}
+
 .ws-add {
   display: grid;
   grid-template-columns: 1fr 1.2fr auto;
@@ -1676,6 +1684,10 @@ a {
   border: 1px solid rgba(240, 138, 42, 0.18);
 }
 
+.experience__icon svg {
+  display: block;
+}
+
 .experience__title {
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -1721,6 +1733,10 @@ a {
   color: #b45309;
   background: rgba(242, 178, 74, 0.18);
   border: 1px solid rgba(240, 138, 42, 0.18);
+}
+
+.feature__icon svg {
+  display: block;
 }
 
 .feature__title {
@@ -2020,6 +2036,8 @@ html {
   font-size: 20px;
   line-height: 1;
   color: #111827;
+  display: grid;
+  place-items: center;
 }
 
 .form {
