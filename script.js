@@ -8,7 +8,10 @@ function closeAllDropdowns() {
 
 function closeAllModals() {
   document.querySelectorAll(".modal:not([hidden])").forEach((modal) => {
-    modal.hidden = true;
+    modal.classList.remove("is-open");
+    window.setTimeout(() => {
+      modal.hidden = true;
+    }, 260);
   });
 }
 
@@ -16,6 +19,10 @@ function openModal(name) {
   const modal = document.getElementById(`modal-${name}`);
   if (!modal) return;
   modal.hidden = false;
+  modal.classList.remove("is-open");
+  window.requestAnimationFrame(() => {
+    modal.classList.add("is-open");
+  });
   const firstInput = modal.querySelector("input, select, textarea, button");
   if (firstInput) firstInput.focus();
 }

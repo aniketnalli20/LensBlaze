@@ -2151,13 +2151,17 @@ html {
   z-index: 80;
   display: grid;
   place-items: center;
+  opacity: 0;
+  transition: opacity 260ms ease;
 }
 
 .modal__overlay {
   position: absolute;
   inset: 0;
   background: rgba(17, 24, 39, 0.55);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 260ms ease;
 }
 
 .modal__panel {
@@ -2168,8 +2172,66 @@ html {
   border-radius: 22px;
   box-shadow: 0 28px 80px rgba(17, 24, 39, 0.28);
   padding: 16px;
+  transform: translateY(10px) scale(0.98);
+  opacity: 0;
+  transition: transform 260ms ease, opacity 260ms ease, width 260ms ease, height 260ms ease;
+  max-height: calc(100vh - 28px);
+  overflow: auto;
 }
 
+.modal.is-open {
+  opacity: 1;
+}
+
+.modal.is-open .modal__overlay {
+  opacity: 1;
+}
+
+.modal.is-open .modal__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal--support .modal__panel {
+  width: 50vw;
+  height: 50vh;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100vh - 28px);
+  min-width: 320px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal--support .form {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .modal--support .modal__panel {
+    width: 50vw;
+    height: 50vh;
+    min-width: 280px;
+    min-height: 260px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .modal--support .modal__panel {
+    width: 50vw;
+    height: 50vh;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal--support .modal__panel {
+    width: 50vw;
+    height: 50vh;
+  }
+}
 .modal__head {
   display: flex;
   align-items: center;
