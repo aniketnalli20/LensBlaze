@@ -60,6 +60,18 @@ function buildLoginUrl(redirectPath) {
   return `./login.html?redirect=${encodeURIComponent(redirect)}`;
 }
 
+function openInitialModalFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get("modal");
+  if (!name) return;
+  window.setTimeout(() => {
+    closeAllModals();
+    openModal(name);
+  }, 0);
+}
+
+openInitialModalFromUrl();
+
 document.addEventListener("click", (e) => {
   const authRequired = e.target.closest("[data-auth-required]");
   if (authRequired && !isLoggedIn()) {
