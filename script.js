@@ -433,6 +433,168 @@ function initFormSystem() {
   });
 }
 
+const ProviderAuth = (() => {
+  const SELECTED_KEY = "lb_provider_selected_v1";
+  const PENDING_KEY = "lb_provider_pending_v1";
+
+  function requiresSelection(provider) {
+    const p = String(provider || "").toLowerCase();
+    return p !== "email";
+  }
+
+  function getAllSelected() {
+    return safeParseJson(window.sessionStorage.getItem(SELECTED_KEY), {});
+  }
+
+  function setSelected(provider, email) {
+    const next = getAllSelected();
+    next[String(provider || "provider")] = { email: String(email || "") };
+    try {
+      window.sessionStorage.setItem(SELECTED_KEY, JSON.stringify(next));
+    } catch {}
+  }
+
+  function getSelected(provider) {
+    const all = getAllSelected();
+    return all[String(provider || "provider")] || null;
+  }
+
+  function setPending(provider, formId) {
+    try {
+      window.sessionStorage.setItem(PENDING_KEY, JSON.stringify({ provider, formId }));
+    } catch {}
+  }
+
+  function getPending() {
+    return safeParseJson(window.sessionStorage.getItem(PENDING_KEY), null);
+  }
+
+  function clearPending() {
+    try {
+      window.sessionStorage.removeItem(PENDING_KEY);
+    } catch {}
+    const status = document.getElementById("provider-status");
+    if (status) status.textContent = "";
+  }
+
+  function getDefaultAccounts(provider) {
+    const p = String(provider || "provider").toLowerCase();
+    if (p === "google") {
+      return ["studio@example.com", "photographer@example.com", "hello@example.com"];
+    }
+    return ["hello@example.com", "billing@example.com"];
+  }
+
+  function renderAccounts(provider) {
+    const root = document.getElementById("provider-accounts");
+    if (!root) return;
+    root.innerHTML = "";
+
+    const selected = getSelected(provider)?.email || "";
+    getDefaultAccounts(provider).forEach((email) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "ws-link";
+      row.setAttribute("data-provider-email", email);
+      row.setAttribute("aria-pressed", String(email === selected));
+
+      const icon = document.createElement("div");
+      icon.className = "ws-link__drag";
+      icon.textContent = email === selected ? "✓" : "○";
+
+      const meta = document.createElement("div");
+      meta.className = "ws-link__meta";
+
+      const title = document.createElement("div");
+      title.className = "ws-link__title";
+      title.textContent = email;
+
+      const hint = document.createElement("div");
+      hint.className = "ws-link__url";
+      hint.textContent = "Use this account";
+
+      meta.appendChild(title);
+      meta.appendChild(hint);
+
+      const action = document.createElement("div");
+      action.className = "ws-link__actions";
+
+      const btn = document.createElement("div");
+      btn.className = "ws-link__btn";
+      btn.textContent = "→";
+      action.appendChild(btn);
+
+      row.appendChild(icon);
+      row.appendChild(meta);
+      row.appendChild(action);
+
+      root.appendChild(row);
+    });
+  }
+
+  function open(provider, formId) {
+    setPending(provider, formId);
+
+    const title = document.getElementById("provider-title");
+    const subtitle = document.getElementById("provider-subtitle");
+    if (title) title.textContent = `Select ${String(provider || "an")} account`;
+    if (subtitle) subtitle.textContent = "Choose the account you want to use before continuing.";
+    renderAccounts(provider);
+    openModal("provider");
+  }
+
+  function bind() {
+    const modal = document.getElementById("modal-provider");
+    if (!modal) return;
+
+    modal.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-provider-email]");
+      if (!btn) return;
+      const pending = getPending();
+      const provider = pending?.provider || "provider";
+      const email = btn.getAttribute("data-provider-email") || "";
+      if (!email) return;
+      setSelected(provider, email);
+      renderAccounts(provider);
+      const status = document.getElementById("provider-status");
+      if (status) status.textContent = "";
+    });
+
+    const cont = document.getElementById("provider-continue");
+    if (cont) {
+      cont.addEventListener("click", () => {
+        const pending = getPending();
+        if (!pending?.provider) return;
+        const selected = getSelected(pending.provider);
+        const status = document.getElementById("provider-status");
+        if (!selected?.email) {
+          if (status) status.textContent = "Please select an account to continue.";
+          return;
+        }
+
+        const form = pending.formId ? document.getElementById(pending.formId) : null;
+        if (form) {
+          const fakeBtn = document.querySelector(`[data-provider="${CSS.escape(pending.provider)}"]`);
+          if (fakeBtn instanceof HTMLButtonElement) fakeBtn.click();
+        } else {
+          clearPending();
+          closeAllModals();
+        }
+      });
+    }
+
+    modal.querySelectorAll("[data-modal-close]").forEach((el) => {
+      el.addEventListener("click", () => {
+        clearPending();
+      });
+    });
+  }
+
+  bind();
+
+  return { requiresSelection, getSelected, open, clearPending };
+})();
+
 const ButtonClickHandlers = (() => {
   function togglePassword(btn) {
     const selector = btn.getAttribute("data-toggle-password");
@@ -449,9 +611,16 @@ const ButtonClickHandlers = (() => {
     const provider = btn.getAttribute("data-provider") || "provider";
     const form = btn.closest("form");
     if (!form) return;
-    setLoggedIn({ method: provider });
+    const selection = ProviderAuth.getSelected(provider);
+    if (ProviderAuth.requiresSelection(provider) && !selection) {
+      ProviderAuth.open(provider, form.getAttribute("id") || "");
+      return;
+    }
+    const email = selection?.email || "";
+    setLoggedIn({ method: provider, email });
     setStatus(form, `Signed in with ${provider}.`);
     updateAuthVisibility();
+    ProviderAuth.clearPending();
     if (document.body.classList.contains("auth-body")) {
       const redirect = getSafeRedirect();
       window.setTimeout(() => {
@@ -542,6 +711,41 @@ function updateAuthVisibility() {
 
   const workspace = document.getElementById("workspace");
   if (workspace) workspace.hidden = !loggedIn;
+
+  updateNavbarProfile();
+}
+
+function updateNavbarProfile() {
+  const avatar = document.getElementById("nav-avatar");
+  const label = document.getElementById("nav-profile-label");
+  if (!avatar || !label) return;
+  if (!isLoggedIn()) {
+    avatar.style.backgroundImage = "";
+    avatar.textContent = "";
+    label.textContent = "Profile";
+    return;
+  }
+
+  const ws = getWorkspace?.() || null;
+  const name = ws?.profile?.name || "";
+  const logo = ws?.profile?.logo || "";
+  const email = window.localStorage.getItem("lb_email") || "";
+  const display = name || email || "Profile";
+
+  label.textContent = display;
+
+  if (logo) {
+    avatar.style.backgroundImage = `url("${logo}")`;
+    avatar.style.backgroundSize = "cover";
+    avatar.style.backgroundPosition = "center";
+    avatar.textContent = "";
+  } else {
+    avatar.style.backgroundImage = "";
+    avatar.style.backgroundSize = "";
+    avatar.style.backgroundPosition = "";
+    const initial = String(display || "P").trim().slice(0, 1).toUpperCase();
+    avatar.textContent = initial || "P";
+  }
 }
 
 function clamp(n, min, max) {
@@ -680,6 +884,7 @@ function renderWorkspace(state) {
 
   renderLinksList(state);
   renderPreview(state);
+  updateNavbarProfile();
 }
 
 function renderLinksList(state) {
