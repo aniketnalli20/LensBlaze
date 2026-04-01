@@ -142,6 +142,11 @@ a {
   box-shadow: var(--shadow-soft);
 }
 
+.nav__menu--right {
+  left: auto;
+  right: 0;
+}
+
 .nav__dropdown.is-open .nav__menu {
   display: block;
 }
@@ -154,8 +159,56 @@ a {
   color: #374151;
 }
 
+.nav__link--btn {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
 .nav__link:hover {
   background: rgba(242, 178, 74, 0.14);
+}
+
+.nav__dropdown--profile {
+  position: relative;
+}
+
+.nav__trigger--profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(17, 24, 39, 0.06);
+}
+
+.nav__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: radial-gradient(circle at 30% 30%, rgba(242, 178, 74, 0.9), rgba(240, 138, 42, 0.7));
+  display: grid;
+  place-items: center;
+  color: rgba(17, 24, 39, 0.75);
+  font-weight: 900;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.nav__profile-label {
+  font-weight: 800;
+  font-size: 13px;
+  color: #111827;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topbar__actions {
@@ -957,6 +1010,9 @@ a {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 12px 30px rgba(17, 24, 39, 0.06);
   padding: 12px;
+  max-height: calc(100vh - 128px);
+  overflow: auto;
+  transition: top 140ms ease;
 }
 
 .ws-preview__head {

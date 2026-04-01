@@ -64,7 +64,19 @@
           <a class="topbar__login" href="./login.html" data-auth-show="out">Log In</a>
           <a class="btn btn--primary" href="#signup" data-modal="signup" data-auth-show="out">Start free trial</a>
           <a class="btn btn--secondary" href="#workspace" data-auth-show="in">Workspace</a>
-          <button class="btn btn--secondary" type="button" id="btn-logout" data-auth-show="in">Log out</button>
+          <div class="nav__dropdown nav__dropdown--profile" data-auth-show="in">
+            <button class="nav__trigger nav__trigger--profile" type="button" aria-expanded="false" id="nav-profile-trigger">
+              <span class="nav__avatar" id="nav-avatar" aria-hidden="true"></span>
+              <span class="nav__profile-label" id="nav-profile-label">Profile</span>
+              <span class="nav__chev" aria-hidden="true">▾</span>
+            </button>
+            <div class="nav__menu nav__menu--right" role="menu" aria-label="Profile">
+              <a class="nav__link" href="#workspace" role="menuitem" id="nav-profile-view">View profile</a>
+              <button class="nav__link nav__link--btn" type="button" role="menuitem" id="nav-profile-settings">Settings</button>
+              <button class="nav__link nav__link--btn" type="button" role="menuitem" id="nav-profile-logout">Log out</button>
+            </div>
+          </div>
+          <button class="btn btn--secondary" type="button" id="btn-logout" data-auth-show="in" hidden>Log out</button>
         </div>
       </div>
     </header>
