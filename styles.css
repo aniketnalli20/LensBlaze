@@ -290,6 +290,19 @@ a {
   box-shadow: 0 0 0 4px rgba(242, 178, 74, 0.22);
 }
 
+.auth-field__input[aria-invalid="true"] {
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
+
+.auth-field__error {
+  margin-top: 6px;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
 .auth-field__toggle {
   position: absolute;
   right: 10px;
@@ -1964,6 +1977,30 @@ html {
 .field__input:focus {
   border-color: rgba(240, 138, 42, 0.55);
   box-shadow: 0 0 0 4px rgba(242, 178, 74, 0.22);
+}
+
+.field__input[aria-invalid="true"] {
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
+
+.field__error {
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.ws-field__input[aria-invalid="true"] {
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
+
+.ws-field__error {
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 700;
 }
 
 .field__textarea {
