@@ -2697,10 +2697,19 @@ html {
     padding: 22px;
   }
   .hero__gallery {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "a b"
       "c d";
+    gap: 10px;
+    height: auto;
+  }
+  .hero__photo {
+    position: static;
+    width: auto;
+    height: auto;
+    transform: none;
   }
   .hero__photo--a {
     aspect-ratio: 4 / 5;
@@ -2742,12 +2751,21 @@ html {
 
 @media (max-width: 420px) {
   .hero__gallery {
+    display: grid;
     grid-template-columns: 1fr;
     grid-template-areas:
       "a"
       "b"
       "c"
       "d";
+    gap: 10px;
+    height: auto;
+  }
+  .hero__photo {
+    position: static;
+    width: auto;
+    height: auto;
+    transform: none;
   }
   .hero__photo--a,
   .hero__photo--b,
