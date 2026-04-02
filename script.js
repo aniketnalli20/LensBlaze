@@ -216,8 +216,8 @@ const FormSchemas = (() => {
   const v = FormValidationCore;
   return {
     "form-signup": {
-      email: [v.required("Work email is required."), v.email("Enter a valid work email.")],
-      password: [v.required("Password is required."), v.minLength(8, "Password must be at least 8 characters.")],
+      email: [v.required("Email is required."), v.email("Enter a valid email.")],
+      password: [v.required("Details are required."), v.minLength(8, "Please add a bit more detail (at least 8 characters).")],
     },
     "form-login": {
       email: [v.required("Email is required."), v.email("Enter a valid email.")],
@@ -230,7 +230,7 @@ const FormSchemas = (() => {
     "form-demo": {
       name: [v.required("Name is required."), v.minLength(2, "Name is too short."), v.maxLength(80, "Name is too long.")],
       email: [v.required("Email is required."), v.email("Enter a valid email.")],
-      type: [v.selectRequired("Select what you shoot.")],
+      type: [v.selectRequired("Select the kind of project.")],
     },
     "form-contact": {
       name: [v.required("Name is required."), v.minLength(2, "Name is too short."), v.maxLength(80, "Name is too long.")],
@@ -326,7 +326,7 @@ const FormHandlers = (() => {
     const id = state.id;
     if (id === "form-signup") {
       const plan = document.getElementById("signup-plan")?.value || "Advanced";
-      setStatus(form, `Account created. Trial started on ${plan}.`);
+      setStatus(form, `Request received for ${plan}. I’ll reply with a quote and next steps.`);
       return;
     }
     if (id === "form-login") {
@@ -349,12 +349,12 @@ const FormHandlers = (() => {
       return;
     }
     if (id === "form-demo") {
-      setStatus(form, "Request received. We’ll email you to schedule a demo.");
+      setStatus(form, "Request received. I’ll share portfolio links and next steps shortly.");
       closeAllModals();
       return;
     }
     if (id === "form-contact") {
-      setStatus(form, "Message sent. We’ll get back to you shortly.");
+      setStatus(form, "Message sent. I’ll get back to you shortly.");
       closeAllModals();
       return;
     }
@@ -558,7 +558,7 @@ const ProviderAuth = (() => {
       const empty = document.createElement("div");
       empty.className = "ws-empty";
       empty.textContent = isGoogleProvider(provider)
-        ? "No Google accounts configured yet. Add one in Workspace → Account."
+        ? "No Google accounts configured yet. Add one in Client Area → Contact."
         : "No accounts available for this provider.";
       root.appendChild(empty);
       if (cont instanceof HTMLButtonElement) cont.disabled = true;
@@ -1638,10 +1638,10 @@ const ChatbotFlow = (() => {
           { label: "Get started", next: "onboarding_start" },
           { label: "Build my bio page", next: "bio_entry" },
           { label: "Deliver photos to clients", next: "gallery_entry" },
-          { label: "Sell prints or downloads", next: "store_entry" },
-          { label: "Manage bookings", next: "booking_entry" },
+          { label: "Plan deliverables", next: "store_entry" },
+          { label: "Manage schedule", next: "booking_entry" },
           { label: "Fix an issue", next: "issue_entry" },
-          { label: "Pricing & plans", next: "pricing_entry" },
+          { label: "Packages", next: "pricing_entry" },
         ],
       },
 
@@ -1749,7 +1749,7 @@ const ChatbotFlow = (() => {
             },
           },
           { label: "Continue setup", next: "onboarding_new" },
-          { label: "Go to dashboard", action: () => goWorkspace("profile") },
+          { label: "Go to client area", action: () => goWorkspace("profile") },
         ],
       },
 
@@ -1805,47 +1805,47 @@ const ChatbotFlow = (() => {
       },
 
       store_entry: {
-        progress: "Store",
-        message: "Start selling your work. What do you want to sell?",
+        progress: "Deliverables",
+        message: "Set up what you want delivered:",
         options: [
-          { label: "Prints", next: "store_pricing" },
-          { label: "Digital downloads", next: "store_pricing" },
-          { label: "Packages", next: "store_pricing" },
+          { label: "Final photos", next: "store_pricing" },
+          { label: "Edited video", next: "store_pricing" },
+          { label: "Social assets", next: "store_pricing" },
         ],
       },
 
       store_pricing: {
-        progress: progress("Store", 2, 3),
-        message: "Set pricing:",
+        progress: progress("Deliverables", 2, 3),
+        message: "Set deliverables:",
         options: [
-          { label: "Add price", action: () => goWorkspace("store") },
+          { label: "Add items", action: () => goWorkspace("store") },
           { label: "Create package", action: () => goWorkspace("store") },
-          { label: "Add discount", action: () => goWorkspace("store") },
+          { label: "Add notes", action: () => goWorkspace("store") },
           { label: "Continue", next: "store_checkout" },
         ],
       },
 
       store_checkout: {
-        progress: progress("Store", 3, 3),
-        message: "Enable checkout?",
+        progress: progress("Deliverables", 3, 3),
+        message: "Choose delivery method?",
         options: [
-          { label: "Yes", action: () => goWorkspace("store") },
-          { label: "Not now", next: "start" },
+          { label: "Private link", action: () => goWorkspace("store") },
+          { label: "Later", next: "start" },
         ],
       },
 
       booking_entry: {
-        progress: "Bookings & Leads",
-        message: "Capture and manage client inquiries. What do you want to do?",
+        progress: "Schedule",
+        message: "Plan shoots and manage inquiries. What do you want to do?",
         options: [
           { label: "Create inquiry form", next: "booking_fields" },
-          { label: "View leads", action: () => goWorkspace("bookings") },
-          { label: "Automate replies", next: "booking_autoresponse" },
+          { label: "View schedule", action: () => goWorkspace("bookings") },
+          { label: "Auto‑reply setup", next: "booking_autoresponse" },
         ],
       },
 
       booking_fields: {
-        progress: progress("Bookings & Leads", 2, 3),
+        progress: progress("Schedule", 2, 3),
         message: "Add fields to your form:",
         options: [
           { label: "Name", action: () => goWorkspace("bookings") },
@@ -1857,8 +1857,8 @@ const ChatbotFlow = (() => {
       },
 
       booking_autoresponse: {
-        progress: progress("Bookings & Leads", 3, 3),
-        message: "Enable auto-response?",
+        progress: progress("Schedule", 3, 3),
+        message: "Enable auto‑response?",
         options: [
           { label: "Yes", action: () => goWorkspace("bookings") },
           { label: "No", action: () => goWorkspace("bookings") },
@@ -1867,8 +1867,8 @@ const ChatbotFlow = (() => {
       },
 
       website_entry: {
-        progress: "Website Builder",
-        message: "Build your photography website. Choose a layout:",
+        progress: "Portfolio",
+        message: "Organize your online presence. Choose a layout:",
         options: [
           { label: "Portfolio", next: "website_sections" },
           { label: "Business", next: "website_sections" },
@@ -1877,7 +1877,7 @@ const ChatbotFlow = (() => {
       },
 
       website_sections: {
-        progress: progress("Website Builder", 2, 3),
+        progress: progress("Portfolio", 2, 3),
         message: "Add sections:",
         options: [
           { label: "Gallery", action: () => goWorkspace("galleries") },
@@ -1889,8 +1889,8 @@ const ChatbotFlow = (() => {
       },
 
       website_domain: {
-        progress: progress("Website Builder", 3, 3),
-        message: "Connect domain?",
+        progress: progress("Portfolio", 3, 3),
+        message: "Connect domain? (optional)",
         options: [
           { label: "Yes", action: () => goWorkspace("account") },
           { label: "Later", next: "start" },
@@ -1898,50 +1898,52 @@ const ChatbotFlow = (() => {
       },
 
       pricing_entry: {
-        progress: "Pricing & Plans",
-        message: "Explore plans and features. What do you want to know?",
+        progress: "Packages",
+        message: "Explore packages. What do you want to know?",
         options: [
           {
-            label: "Free plan details",
+            label: "Packages overview",
             action: () => {
               closeAllModals();
               window.location.hash = "#pricing";
             },
           },
           {
-            label: "Trial (30/60/90 days)",
+            label: "Project-based (no subscription)",
             action: () => {
               closeAllModals();
               window.location.hash = "#pricing";
             },
           },
           {
-            label: "Upgrade options",
+            label: "Custom quote options",
             action: () => {
               closeAllModals();
               window.location.hash = "#pricing";
             },
           },
-          { label: "Do you want to upgrade?", next: "pricing_upgrade" },
+          { label: "Book a package", next: "pricing_upgrade" },
+        ],
+          { label: "Ask a question", action: () => (closeAllModals(), openModal("contact")) },
         ],
       },
 
       pricing_upgrade: {
-        progress: "Pricing & Plans",
-        message: "Do you want to upgrade?",
+        progress: "Packages",
+        message: "Want to book a package?",
         options: [
-          { label: "Yes", action: () => (closeAllModals(), openModal("contact")) },
+          { label: "Yes, book it", action: () => (closeAllModals(), openModal("contact")) },
           { label: "Not now", next: "start" },
         ],
       },
 
       issue_entry: {
         progress: "Fix an Issue",
-        message: "What issue are you facing?",
+        message: "What do you need help with?",
         options: [
           { label: "Login problem", next: "issue_login" },
           { label: "Gallery not working", next: "issue_gallery" },
-          { label: "Payment issue", next: "issue_payment" },
+          { label: "Invoice or payment", next: "issue_payment" },
           { label: "Email not sending", next: "issue_email" },
           { label: "Something else", next: "issue_other" },
         ],
@@ -1969,9 +1971,9 @@ const ChatbotFlow = (() => {
 
       issue_payment: {
         progress: "Fix an Issue",
-        message: "For payment issues, confirm plan status and checkout details.",
+        message: "For invoice or payment questions, share your name and project date.",
         options: [
-          { label: "View billing", action: () => goWorkspace("billing") },
+          { label: "View invoice", action: () => goWorkspace("billing") },
           { label: "Contact support", action: () => (closeAllModals(), openModal("contact")) },
           { label: "Back to menu", next: "start" },
         ],
