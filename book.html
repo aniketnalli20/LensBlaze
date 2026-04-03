@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LensBlaze - Book a Shoot</title>
+    <link rel="stylesheet" href="./styles.css?v=20260401-3" />
+  </head>
+  <body>
+    <header class="topbar" role="banner">
+      <div class="topbar__inner">
+        <a class="brand" href="./index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="34" height="34">
+              <defs>
+                <linearGradient id="g-book" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#f2b24a" />
+                  <stop offset="1" stop-color="#f08a2a" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#g-book)" d="M32 6 52 18v28L32 58 12 46V18z" opacity="0.25" />
+              <path
+                fill="url(#g-book)"
+                d="M20 20h10l-6 10h-10zm14 0h10l-6 10h-10zm-7 14h10l-6 10H21zm14 0h10l-6 10H35z"
+              />
+            </svg>
+          </span>
+          <span class="brand__name brand__name--full">LensBlaze</span>
+          <span class="brand__name brand__name--short" aria-hidden="true">LB</span>
+        </a>
+        <div class="topbar__actions">
+          <a class="btn btn--secondary" href="./index.html#bio">View Portfolio</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top" class="page" role="main">
+      <section class="content">
+        <section class="section section--contrast anchor" aria-label="Book a Shoot">
+          <header class="section__header">
+            <h1 class="section__title">Book a Shoot</h1>
+            <p class="section__subtitle">Share your requirements and timeline, and receive a response within 24 hours.</p>
+          </header>
+
+          <div class="modal__panel" style="margin: 0 auto; max-width: 640px">
+            <div class="modal__head">
+              <div class="modal__title">Booking Form</div>
+            </div>
+            <form class="form" id="form-contact">
+              <label class="field">
+                <div class="field__label">Name</div>
+                <input class="field__input" name="name" type="text" autocomplete="name" required />
+              </label>
+              <label class="field">
+                <div class="field__label">Email</div>
+                <input class="field__input" name="email" type="email" autocomplete="email" required />
+              </label>
+              <label class="field">
+                <div class="field__label">Requirement</div>
+                <textarea class="field__input field__textarea" name="message" rows="5" required></textarea>
+              </label>
+              <button class="btn btn--primary form__submit" type="submit">Send</button>
+              <div class="form__status" aria-live="polite"></div>
+            </form>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
